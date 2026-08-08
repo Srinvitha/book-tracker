@@ -9,6 +9,7 @@ if (bookForm && editBookData) {
     document.getElementById("bookName").value = editBookData.name;
     document.getElementById("author").value = editBookData.author;
     document.getElementById("genre").value = editBookData.genre;
+    document.getElementById("type").value = editBookData.type || "book";
     document.getElementById("bookLink").value = editBookData.link;
     document.getElementById("cover").value = editBookData.cover;
     document.getElementById("status").value = editBookData.status;
@@ -34,6 +35,7 @@ if (bookForm) {
             name: document.getElementById("bookName").value,
             author: document.getElementById("author").value,
             genre: document.getElementById("genre").value,
+            type: document.getElementById("type").value || "book",
             link: document.getElementById("bookLink").value,
             cover: document.getElementById("cover").value,
             status: document.getElementById("status").value,
@@ -92,7 +94,7 @@ function displayBooks(bookList) {
         const card = document.createElement("div");
 
         card.className =
-            "book-card bg-white rounded-xl overflow-hidden";
+            `book-card ${getStatusClass(book.status)} rounded-xl overflow-hidden`;
 
         card.innerHTML = `
             <img
@@ -124,16 +126,14 @@ function displayBooks(bookList) {
                 </p>
 
                 ${
-                    book.genre
-                    ? `<span class="genre-badge mt-1">
-                        ${book.genre}
-                       </span>`
+                    getGenreList(book.genre).length
+                    ? `<div class="flex flex-wrap gap-2 mt-1">
+                        ${getGenreList(book.genre).map(function (genre) {
+                            return `<span class="genre-badge">${genre}</span>`;
+                        }).join("")}
+                       </div>`
                     : ""
                 }
-
-                <span class="status-badge ${getStatusClass(book.status)}">
-                    ${getStatusText(book.status)}
-                </span>
 
                 <div class="mt-4 flex flex-col sm:flex-row gap-2">
 
@@ -143,7 +143,7 @@ function displayBooks(bookList) {
                             href="${book.link}"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="flex-1 min-w-0 text-center bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                            class="flex-1 min-w-0 inline-flex items-center justify-center bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 whitespace-nowrap">
                             Open Link
                            </a>`
                         : ""
@@ -206,6 +206,38 @@ function getStatusClass(status) {
     return "";
 }
 
+function normalizeType(type) {
+    if (type === "manga" || type === "webnovel") {
+        return type;
+    }
+
+    return "book";
+}
+
+function getGenreList(genreValue) {
+    if (!genreValue) return [];
+
+    return Array.from(new Set(
+        String(genreValue)
+            .split(",")
+            .map(function (genre) {
+                return genre.trim();
+            })
+            .filter(Boolean)
+    ));
+}
+
+function getAuthorList(authorValue) {
+    if (!authorValue) return [];
+
+    return String(authorValue)
+        .split(",")
+        .map(function (author) {
+            return author.trim();
+        })
+        .filter(Boolean);
+}
+
 
 // ---------------- DELETE BOOK ----------------
 
@@ -258,6 +290,7 @@ function editBook(id) {
 // ---------------- SEARCH + FILTER + SORT ----------------
 
 const searchInput = document.getElementById("searchInput");
+const typeFilter = document.getElementById("typeFilter");
 const statusFilter = document.getElementById("statusFilter");
 const genreFilter = document.getElementById("genreFilter");
 const favoriteFilter = document.getElementById("favoriteFilter");
@@ -272,13 +305,17 @@ function loadGenres() {
 
     books.forEach(function (book) {
 
-        if (book.genre && !genres.includes(book.genre)) {
-            genres.push(book.genre);
-        }
+        getGenreList(book.genre).forEach(function (genre) {
+            if (!genres.includes(genre)) {
+                genres.push(genre);
+            }
+        });
 
     });
 
-    genres.sort();
+    genres.sort(function (a, b) {
+        return a.localeCompare(b);
+    });
 
     genreFilter.innerHTML = `<option value="all">All Genres</option>`;
 
@@ -301,19 +338,34 @@ function applyFilters() {
     // Search
     if (searchInput) {
 
-        const searchText = (searchInput.value || "").toLowerCase();
+        const searchText = (searchInput.value || "").trim().toLowerCase();
+
+        if (searchText) {
+            filteredBooks = filteredBooks.filter(function (book) {
+
+                const bookName = (book.name || "").toLowerCase();
+                const authors = getAuthorList(book.author).map(function (author) {
+                    return author.toLowerCase();
+                });
+
+                return (
+                    bookName.includes(searchText) ||
+                    authors.some(function (author) {
+                        return author.includes(searchText);
+                    })
+                );
+
+            });
+        }
+    }
+
+    // Type
+    if (typeFilter && typeFilter.value !== "all") {
 
         filteredBooks = filteredBooks.filter(function (book) {
-
-            const bookName = (book.name || "").toLowerCase();
-            const bookAuthor = (book.author || "").toLowerCase();
-
-            return (
-                bookName.includes(searchText) ||
-                bookAuthor.includes(searchText)
-            );
-
+            return normalizeType(book.type) === typeFilter.value;
         });
+
     }
 
     // Status
@@ -329,7 +381,11 @@ function applyFilters() {
     if (genreFilter && genreFilter.value !== "all") {
 
         filteredBooks = filteredBooks.filter(function (book) {
-            return book.genre === genreFilter.value;
+            const genres = getGenreList(book.genre).map(function (genre) {
+                return genre.toLowerCase();
+            });
+
+            return genres.includes(genreFilter.value.toLowerCase());
         });
 
     }
@@ -371,6 +427,10 @@ function applyFilters() {
 
 if (searchInput) {
     searchInput.addEventListener("input", applyFilters);
+}
+
+if (typeFilter) {
+    typeFilter.addEventListener("change", applyFilters);
 }
 
 if (statusFilter) {
