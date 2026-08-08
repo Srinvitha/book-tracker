@@ -1,6 +1,7 @@
 // Get books from localStorage
 let books = JSON.parse(localStorage.getItem("books")) || [];
 
+const bookForm = document.getElementById("bookForm");
 const editBookData = JSON.parse(localStorage.getItem("editBook"));
 
 if (bookForm && editBookData) {
@@ -12,9 +13,15 @@ if (bookForm && editBookData) {
     document.getElementById("cover").value = editBookData.cover;
     document.getElementById("status").value = editBookData.status;
 }
-// ---------------- ADD BOOK ----------------
 
-const bookForm = document.getElementById("bookForm");
+const formTitle = document.getElementById("formTitle");
+const submitButton = document.getElementById("submitButton");
+
+if (editBookData && formTitle && submitButton) {
+    formTitle.textContent = "Edit Book";
+    submitButton.textContent = "Save Changes";
+}
+// ---------------- ADD BOOK ----------------
 
 if (bookForm) {
 
@@ -29,7 +36,8 @@ if (bookForm) {
             genre: document.getElementById("genre").value,
             link: document.getElementById("bookLink").value,
             cover: document.getElementById("cover").value,
-            status: document.getElementById("status").value
+            status: document.getElementById("status").value,
+            favorite: editBookData ? Boolean(editBookData.favorite) : false
         };
 
         if (editBookData) {
@@ -66,9 +74,9 @@ function displayBooks(bookList) {
 
     if (bookList.length === 0) {
         booksContainer.innerHTML = `
-            <p class="text-gray-500 col-span-full text-center">
+            <div class="empty-state">
                 No books found.
-            </p>
+            </div>
         `;
         return;
     }
@@ -78,55 +86,72 @@ function displayBooks(bookList) {
         const card = document.createElement("div");
 
         card.className =
-            "bg-white rounded-xl shadow-sm overflow-hidden";
+            "book-card bg-white rounded-xl overflow-hidden";
 
         card.innerHTML = `
             <img
                 src="${book.cover || 'https://via.placeholder.com/300x400?text=No+Cover'}"
                 alt="${book.name}"
-                class="w-full h-64 object-cover"
+                class="book-cover"
+                onerror="this.src='https://via.placeholder.com/300x400?text=No+Cover'"
             >
 
             <div class="p-4">
 
-                <h2 class="text-lg font-bold">
-                    ${book.name}
-                </h2>
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-lg font-bold truncate flex-1">
+                        ${book.name}
+                    </h2>
 
-                <p class="text-gray-600 text-sm">
+                    <button
+                        onclick="toggleFavorite(${book.id})"
+                        class="favorite-button ${book.favorite ? "active" : ""}"
+                        aria-label="Toggle favorite"
+                        title="${book.favorite ? "Unfavorite" : "Favorite"}"
+                    >
+                        ${book.favorite ? "★" : "☆"}
+                    </button>
+                </div>
+
+                <p class="text-gray-600 text-sm mt-1">
                     ${book.author || "Unknown Author"}
                 </p>
 
-                <p class="text-gray-500 text-sm mt-2">
-                    ${book.genre || "No genre"}
-                </p>
+                ${
+                    book.genre
+                    ? `<span class="genre-badge mt-1">
+                        ${book.genre}
+                       </span>`
+                    : ""
+                }
 
-                <span class="inline-block mt-3 px-3 py-1 text-sm bg-gray-100 rounded-full">
+                <span class="status-badge ${getStatusClass(book.status)}">
                     ${getStatusText(book.status)}
                 </span>
 
-                <div class="flex gap-2 mt-4">
+                <div class="mt-4 flex flex-col sm:flex-row gap-2">
 
                     ${
                         book.link
                         ? `<a
                             href="${book.link}"
                             target="_blank"
-                            class="flex-1 text-center bg-blue-600 text-white py-2 rounded-lg">
-                            Open Book
-                        </a>`
+                            rel="noopener noreferrer"
+                            class="flex-1 min-w-0 text-center bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                            Open Link
+                           </a>`
                         : ""
                     }
 
                     <button
                         onclick="editBook(${book.id})"
-                        class="px-3 py-2 border rounded-lg">
+                        class="flex-1 px-3 py-2 border rounded-lg hover:bg-gray-100">
                         Edit
                     </button>
 
                     <button
                         onclick="deleteBook(${book.id})"
-                        class="px-3 py-2 border border-red-400 text-red-500 rounded-lg">
+                        class="flex-1 px-3 py-2 border border-red-400 text-red-500 rounded-lg hover:bg-red-50">
                         Delete
                     </button>
 
@@ -158,10 +183,33 @@ function getStatusText(status) {
     return "";
 }
 
+function getStatusClass(status) {
+
+    if (status === "want") {
+        return "status-want";
+    }
+
+    if (status === "reading") {
+        return "status-reading";
+    }
+
+    if (status === "completed") {
+        return "status-completed";
+    }
+
+    return "";
+}
+
 
 // ---------------- DELETE BOOK ----------------
 
 function deleteBook(id) {
+
+    const confirmDelete = confirm("Are you sure you want to delete this book?");
+
+    if (!confirmDelete) {
+        return;
+    }
 
     books = books.filter(function (book) {
         return book.id !== id;
@@ -169,7 +217,23 @@ function deleteBook(id) {
 
     localStorage.setItem("books", JSON.stringify(books));
 
-    displayBooks(books);
+    loadGenres();
+    applyFilters();
+}
+
+function toggleFavorite(id) {
+
+    const book = books.find(function (book) {
+        return book.id === id;
+    });
+
+    if (!book) return;
+
+    book.favorite = !book.favorite;
+
+    localStorage.setItem("books", JSON.stringify(books));
+
+    applyFilters();
 }
 
 function editBook(id) {
@@ -185,17 +249,55 @@ function editBook(id) {
     window.location.href = "add-book.html";
 }
 
-// ---------------- SEARCH ----------------
+// ---------------- SEARCH + FILTER + SORT ----------------
 
 const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+const genreFilter = document.getElementById("genreFilter");
+const favoriteFilter = document.getElementById("favoriteFilter");
+const sortBooks = document.getElementById("sortBooks");
 
-if (searchInput) {
+// Create genre options
+function loadGenres() {
 
-    searchInput.addEventListener("input", function () {
+    if (!genreFilter) return;
+
+    const genres = [];
+
+    books.forEach(function (book) {
+
+        if (book.genre && !genres.includes(book.genre)) {
+            genres.push(book.genre);
+        }
+
+    });
+
+    genres.sort();
+
+    genreFilter.innerHTML = `<option value="all">All Genres</option>`;
+
+    genres.forEach(function (genre) {
+
+        genreFilter.innerHTML += `
+            <option value="${genre}">
+                ${genre}
+            </option>
+        `;
+
+    });
+}
+
+// Apply all controls
+function applyFilters() {
+
+    let filteredBooks = [...books];
+
+    // Search
+    if (searchInput) {
 
         const searchText = searchInput.value.toLowerCase();
 
-        const filteredBooks = books.filter(function (book) {
+        filteredBooks = filteredBooks.filter(function (book) {
 
             return (
                 book.name.toLowerCase().includes(searchText) ||
@@ -203,35 +305,81 @@ if (searchInput) {
             );
 
         });
+    }
 
-        displayBooks(filteredBooks);
-    });
-}
+    // Status
+    if (statusFilter && statusFilter.value !== "all") {
 
-
-// ---------------- FILTER ----------------
-
-const statusFilter = document.getElementById("statusFilter");
-
-if (statusFilter) {
-
-    statusFilter.addEventListener("change", function () {
-
-        const selectedStatus = statusFilter.value;
-
-        if (selectedStatus === "all") {
-            displayBooks(books);
-            return;
-        }
-
-        const filteredBooks = books.filter(function (book) {
-            return book.status === selectedStatus;
+        filteredBooks = filteredBooks.filter(function (book) {
+            return book.status === statusFilter.value;
         });
 
-        displayBooks(filteredBooks);
-    });
+    }
+
+    // Genre
+    if (genreFilter && genreFilter.value !== "all") {
+
+        filteredBooks = filteredBooks.filter(function (book) {
+            return book.genre === genreFilter.value;
+        });
+
+    }
+
+    // Favorites
+    if (favoriteFilter && favoriteFilter.value === "favorites") {
+
+        filteredBooks = filteredBooks.filter(function (book) {
+            return book.favorite === true;
+        });
+
+    }
+
+    // Sorting
+    if (sortBooks) {
+
+        if (sortBooks.value === "az") {
+
+            filteredBooks.sort(function (a, b) {
+                return a.name.localeCompare(b.name);
+            });
+
+        }
+
+        if (sortBooks.value === "za") {
+
+            filteredBooks.sort(function (a, b) {
+                return b.name.localeCompare(a.name);
+            });
+
+        }
+
+    }
+
+    displayBooks(filteredBooks);
 }
 
+// Event listeners
 
-// Display books when page loads
+if (searchInput) {
+    searchInput.addEventListener("input", applyFilters);
+}
+
+if (statusFilter) {
+    statusFilter.addEventListener("change", applyFilters);
+}
+
+if (genreFilter) {
+    genreFilter.addEventListener("change", applyFilters);
+}
+
+if (favoriteFilter) {
+    favoriteFilter.addEventListener("change", applyFilters);
+}
+
+if (sortBooks) {
+    sortBooks.addEventListener("change", applyFilters);
+}
+
+// Load genres and display books
+loadGenres();
 displayBooks(books);
