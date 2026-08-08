@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Book</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">📚 My Books</h1>
+
+            <a href="index.html"
+               class="text-blue-600 hover:underline">
+                ← Back to Books
+            </a>
+        </div>
+    </nav>
+
+
+    <!-- Form -->
+    <main class="max-w-xl mx-auto px-6 py-10">
+
+        <div class="bg-white p-8 rounded-xl shadow-sm">
+
+            <h2 class="text-2xl font-bold mb-6">Add a Book</h2>
+
+            <form id="bookForm">
+
+                <!-- Book Name -->
+                <label class="block mb-2 font-medium">
+                    Book Name
+                </label>
+
+                <input
+                    type="text"
+                    id="bookName"
+                    placeholder="Enter book name"
+                    required
+                    class="w-full px-4 py-3 border rounded-lg mb-5"
+                >
+
+
+                <!-- Author -->
+                <label class="block mb-2 font-medium">
+                    Author
+                </label>
+
+                <input
+                    type="text"
+                    id="author"
+                    placeholder="Enter author name"
+                    class="w-full px-4 py-3 border rounded-lg mb-5"
+                >
+
+
+                <!-- Genre -->
+                <label class="block mb-2 font-medium">
+                    Genre
+                </label>
+
+                <input
+                    type="text"
+                    id="genre"
+                    placeholder="e.g. Fantasy, Fiction, Mystery"
+                    class="w-full px-4 py-3 border rounded-lg mb-5"
+                >
+
+
+                <!-- Book Link -->
+                <label class="block mb-2 font-medium">
+                    Book Link
+                </label>
+
+                <input
+                    type="url"
+                    id="bookLink"
+                    placeholder="https://..."
+                    class="w-full px-4 py-3 border rounded-lg mb-5"
+                >
+
+
+                <!-- Cover Image -->
+                <label class="block mb-2 font-medium">
+                    Cover Image URL
+                </label>
+
+                <input
+                    type="url"
+                    id="cover"
+                    placeholder="https://..."
+                    class="w-full px-4 py-3 border rounded-lg mb-5"
+                >
+
+
+                <!-- Status -->
+                <label class="block mb-2 font-medium">
+                    Status
+                </label>
+
+                <select
+                    id="status"
+                    class="w-full px-4 py-3 border rounded-lg mb-6"
+                >
+                    <option value="want">Want to Read</option>
+                    <option value="reading">Reading</option>
+                    <option value="completed">Completed</option>
+                </select>
+
+
+                <!-- Submit -->
+                <button
+                    type="submit"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
+                >
+                    Add Book
+                </button>
+
+            </form>
+
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
