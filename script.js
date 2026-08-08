@@ -74,8 +74,14 @@ function displayBooks(bookList) {
 
     if (bookList.length === 0) {
         booksContainer.innerHTML = `
-            <div class="empty-state">
-                No books found.
+            <div class="empty-state col-span-full">
+                <div class="text-5xl mb-4">📚</div>
+                <h2 class="text-xl font-semibold text-gray-700">
+                    No books found
+                </h2>
+                <p class="text-gray-500 mt-2">
+                    Add your first book to get started.
+                </p>
             </div>
         `;
         return;
@@ -295,13 +301,16 @@ function applyFilters() {
     // Search
     if (searchInput) {
 
-        const searchText = searchInput.value.toLowerCase();
+        const searchText = (searchInput.value || "").toLowerCase();
 
         filteredBooks = filteredBooks.filter(function (book) {
 
+            const bookName = (book.name || "").toLowerCase();
+            const bookAuthor = (book.author || "").toLowerCase();
+
             return (
-                book.name.toLowerCase().includes(searchText) ||
-                book.author.toLowerCase().includes(searchText)
+                bookName.includes(searchText) ||
+                bookAuthor.includes(searchText)
             );
 
         });
