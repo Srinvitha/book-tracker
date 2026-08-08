@@ -11,7 +11,6 @@
 
 <body class="bg-gray-100 min-h-screen">
 
-    <!-- Navbar -->
     <nav class="bg-white shadow-sm">
         <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold">My Books</h1>
@@ -23,11 +22,7 @@
         </div>
     </nav>
 
-
-    <!-- Main Content -->
     <main class="max-w-6xl mx-auto px-6 py-8">
-
-        <!-- Search & Filter -->
         <div class="flex flex-col md:flex-row gap-4 mb-8">
 
             <input
@@ -62,6 +57,7 @@
                 <option value="want">Want to Read</option>
                 <option value="reading">Reading</option>
                 <option value="completed">Completed</option>
+                <option value="hiatus">Hiatus</option>
             </select>
 
             <select
@@ -83,13 +79,10 @@
 
         </div>
 
-
-        <!-- Books -->
         <div
             id="booksContainer"
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-            <!-- Books will be added here using JavaScript -->
         </div>
 
     </main>

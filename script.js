@@ -1,4 +1,3 @@
-// Get books from localStorage
 let books = JSON.parse(localStorage.getItem("books")) || [];
 
 const bookForm = document.getElementById("bookForm");
@@ -22,7 +21,6 @@ if (editBookData && formTitle && submitButton) {
     formTitle.textContent = "Edit Book";
     submitButton.textContent = "Save Changes";
 }
-// ---------------- ADD BOOK ----------------
 
 if (bookForm) {
 
@@ -55,16 +53,11 @@ if (bookForm) {
             books.push(book);
         }
 
-        // Save to browser
         localStorage.setItem("books", JSON.stringify(books));
 
-        // Go back to books page
         window.location.href = "index.html";
     });
 }
-
-
-// ---------------- DISPLAY BOOKS ----------------
 
 const booksContainer = document.getElementById("booksContainer");
 
@@ -77,7 +70,6 @@ function displayBooks(bookList) {
     if (bookList.length === 0) {
         booksContainer.innerHTML = `
             <div class="empty-state col-span-full">
-                <div class="text-5xl mb-4">📚</div>
                 <h2 class="text-xl font-semibold text-gray-700">
                     No books found
                 </h2>
@@ -170,8 +162,6 @@ function displayBooks(bookList) {
     });
 }
 
-
-// Convert status value to readable text
 function getStatusText(status) {
 
     if (status === "want") {
@@ -201,6 +191,10 @@ function getStatusClass(status) {
 
     if (status === "completed") {
         return "status-completed";
+    }
+
+    if (status === "hiatus") {
+        return "status-hiatus";
     }
 
     return "";
@@ -237,9 +231,6 @@ function getAuthorList(authorValue) {
         })
         .filter(Boolean);
 }
-
-
-// ---------------- DELETE BOOK ----------------
 
 function deleteBook(id) {
 
@@ -286,9 +277,6 @@ function editBook(id) {
 
     window.location.href = "add-book.html";
 }
-
-// ---------------- SEARCH + FILTER + SORT ----------------
-
 const searchInput = document.getElementById("searchInput");
 const typeFilter = document.getElementById("typeFilter");
 const statusFilter = document.getElementById("statusFilter");
@@ -296,7 +284,6 @@ const genreFilter = document.getElementById("genreFilter");
 const favoriteFilter = document.getElementById("favoriteFilter");
 const sortBooks = document.getElementById("sortBooks");
 
-// Create genre options
 function loadGenres() {
 
     if (!genreFilter) return;
@@ -330,12 +317,10 @@ function loadGenres() {
     });
 }
 
-// Apply all controls
 function applyFilters() {
 
     let filteredBooks = [...books];
 
-    // Search
     if (searchInput) {
 
         const searchText = (searchInput.value || "").trim().toLowerCase();
@@ -359,7 +344,6 @@ function applyFilters() {
         }
     }
 
-    // Type
     if (typeFilter && typeFilter.value !== "all") {
 
         filteredBooks = filteredBooks.filter(function (book) {
@@ -368,7 +352,6 @@ function applyFilters() {
 
     }
 
-    // Status
     if (statusFilter && statusFilter.value !== "all") {
 
         filteredBooks = filteredBooks.filter(function (book) {
@@ -377,7 +360,6 @@ function applyFilters() {
 
     }
 
-    // Genre
     if (genreFilter && genreFilter.value !== "all") {
 
         filteredBooks = filteredBooks.filter(function (book) {
@@ -390,7 +372,6 @@ function applyFilters() {
 
     }
 
-    // Favorites
     if (favoriteFilter && favoriteFilter.value === "favorites") {
 
         filteredBooks = filteredBooks.filter(function (book) {
@@ -399,7 +380,6 @@ function applyFilters() {
 
     }
 
-    // Sorting
     if (sortBooks) {
 
         if (sortBooks.value === "az") {
@@ -422,8 +402,6 @@ function applyFilters() {
 
     displayBooks(filteredBooks);
 }
-
-// Event listeners
 
 if (searchInput) {
     searchInput.addEventListener("input", applyFilters);
@@ -449,6 +427,5 @@ if (sortBooks) {
     sortBooks.addEventListener("change", applyFilters);
 }
 
-// Load genres and display books
 loadGenres();
 displayBooks(books);

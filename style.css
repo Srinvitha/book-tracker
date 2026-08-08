@@ -55,6 +55,10 @@ body {
     background: #e9d5ff;
 }
 
+.status-hiatus {
+    background: #d9b99b;
+}
+
 .favorite-button {
     width: 36px;
     height: 36px;
