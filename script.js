@@ -143,7 +143,7 @@ function displayBooks(bookList) {
                             href="${book.link}"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="flex-1 min-w-0 inline-flex items-center justify-center bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 whitespace-nowrap">
+                            class="flex-1 min-w-0 inline-flex items-center justify-center bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 whitespace-nowrap">
                             Open Link
                            </a>`
                         : ""
